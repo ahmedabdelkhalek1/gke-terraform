@@ -19,6 +19,11 @@ jobs:
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.5.7
+      - uses: 'google-github-actions/auth@v2'
+        with:
+          project_id: 'artful-fragment-458014-j4 '
+          workload_identity_provider: 'projects/447195453845/locations/global/workloadIdentityPools/github-actions-pool/providers/github-gke-terraform'
+          service_account: 'gke-terraform-service-account@artful-fragment-458014-j4.iam.gserviceaccount.com'
       - name: Terraform Format Check
         run: terraform fmt -check -recursive
         working-directory: infra
@@ -49,12 +54,8 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Login to GCP
-        uses: 'google-github-actions/auth@v2'
-        with:
-          project_id: 'artful-fragment-458014-j4 '
-          workload_identity_provider: 'projects/447195453845/locations/global/workloadIdentityPools/github-actions-pool/providers/github-gke-terraform'
-          service_account: 'gke-terraform-service-account@artful-fragment-458014-j4.iam.gserviceaccount.com'
+
+
       - name: confirm logging to GCP
         run: |
           echo "Deploying infrastructure..."
