@@ -48,10 +48,19 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
       - name: Login to GCP
+        uses: 'google-github-actions/auth@v2'
+        with:
+          project_id: 'friendly-brand-441407-b4'
+          workload_identity_provider: 'projects/447195453845/locations/global/workloadIdentityPools/github-actions-pool/providers/github-gke-terraform'
+          service_account: 'gke-terraform-service-account@artful-fragment-458014-j4.iam.gserviceaccount.com'
+      - name: confirm logging to GCP
+        if: ${{ steps.auth.outcome == 'success' }}
         run: |
-          echo "Authenticating to Google Cloud Platform via OIDC..."
-          echo "Authentication completed!"
+          echo "Deploying infrastructure..."
+          echo "Infrastructure deployment completed!"
+        
       - name: Deploy Infrastructure
         run: |
           echo "Deploying infrastructure..."
