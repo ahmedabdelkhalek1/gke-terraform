@@ -1,5 +1,4 @@
 name: CI/CD Pipeline
-
 on:
   push:
     branches: [ main ]
@@ -8,61 +7,106 @@ on:
       - '.gitignore'
   workflow_dispatch:
 
+# Define common environment variables
+env:
+  TERRAFORM_VERSION: 1.5.7
+  PROJECT_ID: 'artful-fragment-458014-j4'
+  WORKING_DIR: 'infra/environment'
+  
 jobs:
-  terraform-checks:
-    name: Terraform Init & Validation
+  authenticate:
+    name: GCP Authentication
     runs-on: ubuntu-latest
-
     permissions:
-      contents: read       # for actions/checkout
-      id-token: write      # to request a GitHub OIDC token
-
+      contents: read
+      id-token: write
+    outputs:
+      auth_status: ${{ steps.auth.outputs.auth_status || 'success' }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        
+      - name: Google Auth
+        id: auth
+        uses: 'google-github-actions/auth@v2'
+        with:
+          project_id: ${{ env.PROJECT_ID }}
+          workload_identity_provider: 'projects/447195453845/locations/global/workloadIdentityPools/github-actions-pool/providers/github-gke-terraform'
+          service_account: 'gke-terraform-service-account@${{ env.PROJECT_ID }}.iam.gserviceaccount.com'
+          
+  terraform-checks:
+    name: Terraform Init & Validation
+    runs-on: ubuntu-latest
+    needs: authenticate
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: 1.5.7
-      - uses: 'google-github-actions/auth@v2'
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+          
+      - name: Google Auth
+        uses: 'google-github-actions/auth@v2'
         with:
-          project_id: 'artful-fragment-458014-j4'
+          project_id: ${{ env.PROJECT_ID }}
           workload_identity_provider: 'projects/447195453845/locations/global/workloadIdentityPools/github-actions-pool/providers/github-gke-terraform'
-          service_account: 'gke-terraform-service-account@artful-fragment-458014-j4.iam.gserviceaccount.com'
-      # Terraform Cleanup
+          service_account: 'gke-terraform-service-account@${{ env.PROJECT_ID }}.iam.gserviceaccount.com'
+          
       - name: Terraform Cleanup
         run: rm -rf .terraform
+        
       - name: Terraform Format Check
         run: terraform fmt -check -recursive
         working-directory: infra
+        
       - name: Initialize Terraform
         run: terraform init
-        working-directory: infra/environment
+        working-directory: ${{ env.WORKING_DIR }}
+        
       - name: Validate Terraform Configuration
         run: terraform validate
-        working-directory: infra/environment
+        working-directory: ${{ env.WORKING_DIR }}
+        
       - name: Terraform Configuration Plan Report
         run: terraform plan
-        working-directory: infra/environment
+        working-directory: ${{ env.WORKING_DIR }}
+
   deploy-infrastructure:
     name: Deploy Infrastructure
     runs-on: ubuntu-latest
     needs: test-apps
+    environment: production  # Add environment for approval
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
-
-
-      - name: confirm logging to GCP
-        run: |
-          echo "Deploying infrastructure..."
-          echo "Infrastructure deployment completed!"
         
-      - name: Deploy Infrastructure
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+          
+      - name: Google Auth
+        uses: 'google-github-actions/auth@v2'
+        with:
+          project_id: ${{ env.PROJECT_ID }}
+          workload_identity_provider: 'projects/447195453845/locations/global/workloadIdentityPools/github-actions-pool/providers/github-gke-terraform'
+          service_account: 'gke-terraform-service-account@${{ env.PROJECT_ID }}.iam.gserviceaccount.com'
+          
+      - name: Initialize Terraform
+        run: terraform init
+        working-directory: ${{ env.WORKING_DIR }}
+        
+      - name: Terraform Apply
+        run: terraform apply -auto-approve
+        working-directory: ${{ env.WORKING_DIR }}
+        
+      - name: Confirm Infrastructure Deployment
         run: |
-          echo "Deploying infrastructure..."
-          echo "Infrastructure deployment completed!"
+          echo "Infrastructure deployment completed successfully!"
+      
+        
   test-apps:
     name: Test Applications
     runs-on: ubuntu-latest
@@ -70,11 +114,13 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        
       - name: Run Tests
         run: |
           echo "Running application tests..."
           echo "Tests completed successfully!"
-
+          
+          
   deploy-applications:
     name: Deploy Applications
     runs-on: ubuntu-latest
@@ -82,16 +128,25 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        
+      - name: Google Auth
+        uses: 'google-github-actions/auth@v2'
+        with:
+          project_id: ${{ env.PROJECT_ID }}
+          workload_identity_provider: 'projects/447195453845/locations/global/workloadIdentityPools/github-actions-pool/providers/github-gke-terraform'
+          service_account: 'gke-terraform-service-account@${{ env.PROJECT_ID }}.iam.gserviceaccount.com'
+          
       - name: Connect to GKE
         run: |
           echo "Setting up kubectl..."
           echo "Fetching cluster endpoint and auth data."
           echo "kubeconfig entry generated"
+          
       - name: Deploy Applications
         run: |
           echo "Deploying applications..."
           echo "Application deployment completed!"
-
+          
   notification:
     name: Failed pipeline notification
     runs-on: ubuntu-latest
