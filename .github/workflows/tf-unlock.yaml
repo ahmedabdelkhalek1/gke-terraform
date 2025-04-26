@@ -1,0 +1,63 @@
+name: 'Terraform UNLOCK'
+on:
+  workflow_dispatch:
+    inputs:
+      TF_LOCK_ID:
+        required: true
+        type: string
+        description: "UUID, the lock id to unlock, from the error message"
+    
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  TERRAFORM_VERSION: 1.5.7
+  PROJECT_ID: 'artful-fragment-458014-j4'
+  WORKING_DIR: 'infra/environment'
+
+jobs:
+  unlock:
+    name: 'Terraform Unlock'
+    runs-on: ubuntu-latest
+    environment: production  # Add environment for approval
+    steps:
+      # Checkout the repository
+      - name: Checkout
+        uses: actions/checkout@v4
+        
+      # Setup Terraform
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+      
+      - name: Google Auth
+        uses: 'google-github-actions/auth@v2'
+        with:
+          project_id: ${{ env.PROJECT_ID }}
+          workload_identity_provider: 'projects/447195453845/locations/global/workloadIdentityPools/github-actions-pool/providers/github-gke-terraform'
+          service_account: 'gke-terraform-service-account@${{ env.PROJECT_ID }}.iam.gserviceaccount.com'
+          
+      # Terraform Cleanup
+      - name: Terraform Cleanup
+        run: rm -rf .terraform
+        
+      # Initialize Terraform
+      - name: Initialize Terraform
+        run: terraform init
+        working-directory: ${{ env.WORKING_DIR }}
+        
+      # Show lock info before unlocking (optional but helpful)
+      - name: Show Lock Info
+        run: terraform force-unlock -force -verbose '${{ inputs.TF_LOCK_ID }}' || true
+        working-directory: ${{ env.WORKING_DIR }}
+        continue-on-error: true
+        
+      # Unlock Terraform
+      - name: Unlock Terraform
+        run: terraform force-unlock -force '${{ inputs.TF_LOCK_ID }}'
+        working-directory: ${{ env.WORKING_DIR }}
+        
+      - name: Confirm Unlock
+        run: echo "Terraform state has been successfully unlocked with ID '${{ inputs.TF_LOCK_ID }}'"
