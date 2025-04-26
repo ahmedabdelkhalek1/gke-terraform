@@ -41,22 +41,9 @@ jobs:
       - name: Validate Terraform Configuration
         run: terraform validate
         working-directory: infra/environment
-      - name: Validate Terraform Configuration
+      - name: Terraform Configuration Plan Report
         run: terraform plan
         working-directory: infra/environment
-
-  test-apps:
-    name: Test Applications
-    runs-on: ubuntu-latest
-    needs: terraform-checks
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      - name: Run Tests
-        run: |
-          echo "Running application tests..."
-          echo "Tests completed successfully!"
-
   deploy-infrastructure:
     name: Deploy Infrastructure
     runs-on: ubuntu-latest
@@ -76,6 +63,17 @@ jobs:
         run: |
           echo "Deploying infrastructure..."
           echo "Infrastructure deployment completed!"
+  test-apps:
+    name: Test Applications
+    runs-on: ubuntu-latest
+    needs: terraform-checks
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Run Tests
+        run: |
+          echo "Running application tests..."
+          echo "Tests completed successfully!"
 
   deploy-applications:
     name: Deploy Applications
