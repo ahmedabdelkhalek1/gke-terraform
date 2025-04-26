@@ -17,13 +17,13 @@ resource "google_container_node_pool" "primary_nodes" {
       "https://www.googleapis.com/auth/monitoring",
       "https://www.googleapis.com/auth/devstorage.read_only"
     ]
-labels = {
+    labels = {
       env = var.project_id
     }
 
     # Reduce disk size from default 100GB to 50GB or smaller
     disk_size_gb = 40
-    disk_type    = "pd-standard"  # Changed from pd-ssd to pd-standard
+    disk_type    = "pd-standard" # Changed from pd-ssd to pd-standard
     machine_type = var.machine_type
     tags         = ["gke-node", "${var.project_id}-gke"]
     metadata = {
