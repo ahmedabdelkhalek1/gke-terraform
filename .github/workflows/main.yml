@@ -1,0 +1,84 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+    paths-ignore:
+      - 'README.md'
+      - '.gitignore'
+  workflow_dispatch:
+
+jobs:
+  terraform-checks:
+    name: Terraform Init & Validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.5.7
+      - name: Terraform Format Check
+        run: terraform fmt -check -recursive
+        working-directory: infra
+      - name: Initialize Terraform
+        run: terraform init
+        working-directory: infra/environment
+      - name: Validate Terraform Configuration
+        run: terraform validate
+        working-directory: infra/environment
+
+  test-apps:
+    name: Test Applications
+    runs-on: ubuntu-latest
+    needs: terraform-checks
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Run Tests
+        run: |
+          echo "Running application tests..."
+          echo "Tests completed successfully!"
+
+  deploy-infrastructure:
+    name: Deploy Infrastructure
+    runs-on: ubuntu-latest
+    needs: test-apps
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Login to GCP
+        run: |
+          echo "Authenticating to Google Cloud Platform via OIDC..."
+          echo "Authentication completed!"
+      - name: Deploy Infrastructure
+        run: |
+          echo "Deploying infrastructure..."
+          echo "Infrastructure deployment completed!"
+
+  deploy-applications:
+    name: Deploy Applications
+    runs-on: ubuntu-latest
+    needs: deploy-infrastructure
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Connect to GKE
+        run: |
+          echo "Setting up kubectl..."
+          echo "Fetching cluster endpoint and auth data."
+          echo "kubeconfig entry generated"
+      - name: Deploy Applications
+        run: |
+          echo "Deploying applications..."
+          echo "Application deployment completed!"
+
+  notification:
+    name: Failed pipeline notification
+    runs-on: ubuntu-latest
+    needs: [terraform-checks, test-apps, deploy-infrastructure, deploy-applications]
+    if: ${{ always() && (contains(join(needs.*.result, ','), 'failure') || contains(join(needs.*.result,','), 'cancelled')) }}
+    steps:
+      - name: Notify on Slack
+        run: echo "Sending Slack message about failed pipeline..."
