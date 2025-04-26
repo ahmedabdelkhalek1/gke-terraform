@@ -67,6 +67,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
       - name: Terraform Format Check
         run: terraform fmt -check -recursive
         working-directory: ${{ env.TF_WORKING_DIR }}
@@ -100,9 +104,14 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: production     # require manual approval in repo settings
+
     steps:
       - uses: actions/checkout@v4
-
+      
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
       - name: Download Plan
         uses: actions/download-artifact@v4
         with:
