@@ -12,6 +12,11 @@ jobs:
   terraform-checks:
     name: Terraform Init & Validation
     runs-on: ubuntu-latest
+
+    permissions:
+      contents: read       # for actions/checkout
+      id-token: write      # to request a GitHub OIDC token
+      
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
