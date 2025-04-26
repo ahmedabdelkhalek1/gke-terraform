@@ -2,7 +2,7 @@ name: 'Terraform destroy'
 
 on:
   workflow_dispatch:
-   
+
 permissions:
   id-token: write
   contents: read
@@ -11,48 +11,63 @@ env:
   TERRAFORM_VERSION: 1.5.7
   PROJECT_ID: 'artful-fragment-458014-j4'
   WORKING_DIR: 'infra/environment'
-  
+
 jobs:
-  destroy:
-    name: Destroy Infrastructure
+  destroy-plan:
+    name: Plan Destroy Infrastructure
     runs-on: ubuntu-latest
-    environment: production  # Add environment for approval before destroying
     steps:
-      # Checkout the repository
       - name: Checkout
         uses: actions/checkout@v4
-        
-      # Setup Terraform
+
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: ${{ env.TERRAFORM_VERSION }}
-     
+
       - name: Google Auth
         uses: 'google-github-actions/auth@v2'
         with:
           project_id: ${{ env.PROJECT_ID }}
           workload_identity_provider: 'projects/447195453845/locations/global/workloadIdentityPools/github-actions-pool/providers/github-gke-terraform'
           service_account: 'gke-terraform-service-account@${{ env.PROJECT_ID }}.iam.gserviceaccount.com'
-          
-      # Terraform Cleanup
-      - name: Terraform Cleanup
-        run: rm -rf .terraform
-        
-      # Setup Terraform
+
       - name: Initialize Terraform
         run: terraform init
         working-directory: ${{ env.WORKING_DIR }}
-        
-      # Plan destruction (optional but helpful to see what will be destroyed)
+
       - name: Terraform Destroy Plan
         run: terraform plan -destroy
         working-directory: ${{ env.WORKING_DIR }}
-        
-      # Destroy Terraform
+
+  destroy:
+    name: Destroy Infrastructure
+    runs-on: ubuntu-latest
+    environment: production # requires manual approval if environment protection rules exist
+    needs: destroy-plan
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+
+      - name: Google Auth
+        uses: 'google-github-actions/auth@v2'
+        with:
+          project_id: ${{ env.PROJECT_ID }}
+          workload_identity_provider: 'projects/447195453845/locations/global/workloadIdentityPools/github-actions-pool/providers/github-gke-terraform'
+          service_account: 'gke-terraform-service-account@${{ env.PROJECT_ID }}.iam.gserviceaccount.com'
+
+      - name: Initialize Terraform
+        run: terraform init
+        working-directory: ${{ env.WORKING_DIR }}
+
       - name: Terraform Destroy
         run: terraform destroy -auto-approve
         working-directory: ${{ env.WORKING_DIR }}
-        
+
       - name: Confirm Destruction
         run: echo "Infrastructure has been successfully destroyed!"
