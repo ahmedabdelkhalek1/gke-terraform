@@ -16,7 +16,7 @@ jobs:
     permissions:
       contents: read       # for actions/checkout
       id-token: write      # to request a GitHub OIDC token
-      
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -26,7 +26,7 @@ jobs:
           terraform_version: 1.5.7
       - uses: 'google-github-actions/auth@v2'
         with:
-          project_id: 'artful-fragment-458014-j4 '
+          project_id: 'artful-fragment-458014-j4'
           workload_identity_provider: 'projects/447195453845/locations/global/workloadIdentityPools/github-actions-pool/providers/github-gke-terraform'
           service_account: 'gke-terraform-service-account@artful-fragment-458014-j4.iam.gserviceaccount.com'
       - name: Terraform Format Check
