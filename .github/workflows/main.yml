@@ -12,7 +12,11 @@ env:
   TERRAFORM_VERSION: 1.5.7
   PROJECT_ID: 'artful-fragment-458014-j4'
   WORKING_DIR: 'infra/environment'
-  
+
+permissions:
+    contents: read
+    id-token: write # Required for requesting the JWT
+
 jobs:
   authenticate:
     name: GCP Authentication
@@ -37,6 +41,9 @@ jobs:
   terraform-checks:
     name: Terraform Init & Validation
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
     needs: authenticate
     steps:
       - name: Checkout code
