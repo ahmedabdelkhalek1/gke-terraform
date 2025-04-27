@@ -98,27 +98,8 @@ Add these values as GitHub repository secrets:
 
 ## Modules Overview
 
-### 1. VPC Module
 
-**Purpose**: Creates a Virtual Private Cloud (VPC) network and subnets for the GKE cluster.
-
-**Usage**:
-```hcl
-module "vpc" {
-  source       = "./modules/vpc"
-  project_id   = var.project_id
-  region       = var.region
-  network_name = var.network_name
-}
-```
-
-**Principal Resources**:
-- `google_compute_network`: Creates the VPC network
-- `google_compute_subnetwork`: Creates subnets within the VPC
-- `google_compute_router`: Sets up Cloud Router for NAT
-- `google_compute_router_nat`: Configures Cloud NAT for outbound connectivity
-
-### 2. GKE Module
+### 1. GKE Module
 
 **Purpose**: Provisions a Google Kubernetes Engine cluster and node pools.
 
