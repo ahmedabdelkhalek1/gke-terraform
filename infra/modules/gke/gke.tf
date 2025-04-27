@@ -7,7 +7,7 @@ resource "google_container_cluster" "primary" {
   # On version 5.0.0+ of the provider, you must explicitly set deletion_protection = false
   deletion_protection = false
 
-  name     = "${var.project_id}-cluster"
+  name     = "${var.cluster_name}-cluster"
   location = var.region
 
   # Use a zonal cluster instead of regional for free tier

@@ -10,13 +10,13 @@ variable "region" {
 }
 
 variable "node_locations" {
-  description = "Availability zone of the GKE nodes"
+  description = "Availability zone of the  nodes"
   type        = list(string)
 }
 
 variable "node_ip_range" {
   default     = "10.0.0.0/16"
-  description = "IP address range of GKE nodes"
+  description = "IP address range of  nodes"
   type        = string
 }
 

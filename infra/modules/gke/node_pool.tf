@@ -5,7 +5,7 @@ resource "google_container_node_pool" "primary_nodes" {
 
   node_locations = var.node_locations
 
-  node_count = 1 #numbers of nodes per zone
+  node_count = 3 #numbers of nodes per zone
 
 
   version = data.google_container_engine_versions.gke_version.release_channel_latest_version["STABLE"]
