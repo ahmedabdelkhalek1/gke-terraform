@@ -45,6 +45,6 @@ variable "machine_type" {
 variable "cluster_name" {
   description = "GKE cluster name"
   type        = string
-  default     = "Online-Boutique-Demo"
+  default     = "online-boutique-demo"
 
 }
