@@ -1,12 +1,3 @@
-terraform {
-  required_providers {
-    kubernetes = {
-      source  = "hashicorp/kubernetes"
-      version = "~> 2.0"
-    }
-  }
-}
-
 provider "kubernetes" {
   host                   = module.gke_demo.kubernetes_cluster_host
   cluster_ca_certificate = base64decode(module.gke_demo.cluster_ca_certificate)
