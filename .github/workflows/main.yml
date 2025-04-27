@@ -147,7 +147,8 @@ jobs:
         run: |
           echo "Setting up kubectl..."
           curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-          install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+          chmod +x kubectl
+          sudo mv kubectl /usr/local/bin/
           kubectl version --client
           gcloud container clusters get-credentials online-boutique-demo-cluster --region us-east1 --project ${{ env.PROJECT_ID }}
           
