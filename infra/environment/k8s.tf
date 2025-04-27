@@ -5,16 +5,16 @@ provider "kubernetes" {
   client_key             = base64decode(module.gke_demo.client_key)
 }
 
-resource "null_resource" "download_manifest" {
+resource "null_resource" "deploy_microservices_demo" {
   provisioner "local-exec" {
-    command = "curl -o ${path.module}/microservices-demo.yaml https://raw.githubusercontent.com/GoogleCloudPlatform/microservices-demo/master/release/kubernetes-manifests.yaml"
+    command = <<EOT
+      kubectl apply -f https://raw.githubusercontent.com/GoogleCloudPlatform/microservices-demo/master/release/kubernetes-manifests.yaml
+    EOT
+    environment = {
+      KUBECONFIG = "${path.module}/kubeconfig"
+    }
   }
   triggers = {
     always_run = timestamp()
   }
-}
-
-resource "kubernetes_manifest" "microservices_demo" {
-  depends_on = [null_resource.download_manifest]
-  manifest   = yamldecode(file("${path.module}/microservices-demo.yaml"))
 }
