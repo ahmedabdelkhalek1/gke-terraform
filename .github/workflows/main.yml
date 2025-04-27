@@ -115,23 +115,47 @@ jobs:
       
         
   test-apps:
-    name: Test Applications
+    name: Preview Deployment
     runs-on: ubuntu-latest
     needs: deploy-infrastructure
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        
-      - name: Run Tests
+
+      - name: Google Auth
+        uses: google-github-actions/auth@v2
+        with:
+          project_id: ${{ env.PROJECT_ID }}
+          workload_identity_provider: 'projects/447195453845/locations/global/workloadIdentityPools/github-actions-pool/providers/github-gke-terraform'
+          service_account: 'gke-terraform-service-account@${{ env.PROJECT_ID }}.iam.gserviceaccount.com'
+
+      - name: Set up GKE credentials
+        uses: google-github-actions/get-gke-credentials@v2
+        with:
+          project_id: ${{ env.PROJECT_ID }}
+          cluster_name: online-boutique-demo-cluster
+          location: us-east1
+
+      - name: Dry-run apply (server-side)
         run: |
-          echo "Running application tests..."
-          echo "Tests completed successfully!"
+          kubectl apply \
+            --validate=false \
+            --dry-run=server \
+            -f https://raw.githubusercontent.com/GoogleCloudPlatform/microservices-demo/master/release/kubernetes-manifests.yaml
+
+      - name: Show diff against live cluster
+        run: |
+          kubectl diff \
+            --server-side \
+            -f https://raw.githubusercontent.com/GoogleCloudPlatform/microservices-demo/master/release/kubernetes-manifests.yaml
+          
           
           
   deploy-applications:
     name: Deploy Applications
     runs-on: ubuntu-latest
     needs: test-apps
+    environment: production  # Add environment for approval
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
