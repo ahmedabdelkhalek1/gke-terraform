@@ -190,4 +190,4 @@ jobs:
     if: ${{ always() && (contains(join(needs.*.result, ','), 'failure') || contains(join(needs.*.result,','), 'cancelled')) }}
     steps:
       - name: Notify on Slack
-        run: echo "Sending Slack message about failed pipeline..."
+        run: echo "Sending  message about failed pipeline..."
