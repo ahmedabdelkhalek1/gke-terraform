@@ -4,107 +4,139 @@
 
 This repository contains Terraform configurations to deploy a Google Kubernetes Engine (GKE) cluster with custom networking settings.
 
-## Prerequisites
+## 1. Introduction
 
-- [Google Cloud Platform (GCP) Account](https://console.cloud.google.com)
-- [Google Cloud SDK](https://cloud.google.com/sdk/docs/install)
-- [Terraform](https://www.terraform.io/downloads.html)
+This project contains Terraform configurations to deploy a Google Kubernetes Engine (GKE) cluster with custom networking settings.
+
+### Prerequisites
+
+- Google Cloud Platform (GCP) Account
+- Google Cloud SDK installed
+- Terraform installed
 - GCP Project with required APIs enabled:
-    - Compute Engine API
-    - Kubernetes Engine API
-    - Cloud Resource Manager API
+  - Compute Engine API
+  - Kubernetes Engine API
+  - Cloud Resource Manager API
 
-## Network Configuration
+## 2. Architecture and Network Configuration
 
 The cluster is configured with the following IP ranges:
-- Nodes: 10.0.0.0/16
-- Pods: 10.1.0.0/16
-- Services: 10.2.0.0/16
 
-Example output:
-![Pods CIDR](./images/PodsCIDR.png)
-![Services CIDR](./images/ServicesCIDR.png)
+| Component | IP Range      |
+|-----------|---------------|
+| Nodes     | 10.0.0.0/16   |
+| Pods      | 10.1.0.0/16   |
+| Services  | 10.2.0.0/16   |
 
-## Usage
+### Network Setup
+
+The project creates a custom VPC network and subnet with secondary IP ranges for pods and services. This enables VPC-native routing for the GKE cluster.
+
+### Existing Network Screenshots
+
+Pods CIDR Range:  
+![Pods CIDR](./images/PodsCIDR.png)  
+
+Services CIDR Range:  
+![Services CIDR](./images/ServicesCIDR.png)  
+
+### Suggested Additional Screenshots
+
+- **Terraform Plan Output:** Screenshot of the terminal showing `terraform plan` output before applying changes. Place this in the Usage section before deployment steps.
+- **GKE Cluster Dashboard:** Screenshot of the GKE cluster overview page in the GCP Console. Place this in the Architecture section to visualize the cluster.
+- **Kubectl Nodes and Pods:** Screenshot of `kubectl get nodes` and `kubectl get pods --all-namespaces` outputs. Place this in the Usage section after deployment.
+- **Network Topology Diagram:** A simple diagram showing the VPC, subnet, and cluster networking. Place this in the Architecture section.
+
+## 3. Terraform Modules and Resources
+
+### Main Module Overview
+
+The project uses a Terraform module located in `infra/modules/gke` to encapsulate the GKE cluster setup. The module provisions the cluster, node pools, and networking resources.
+
+### Module Input Variables
+
+| Name           | Description                      | Type          | Default           | Required |
+|----------------|--------------------------------|---------------|-------------------|:--------:|
+| project_id     | GCP project id                 | string        | n/a               | Yes      |
+| region         | Region                        | string        | us-east1          | No       |
+| node_locations | Availability zones of the GKE nodes | list(string) | n/a               | Yes      |
+| node_ip_range  | IP address range of GKE nodes | string        | 10.0.0.0/16      | No       |
+| pod_ip_range   | IP address range of Kubernetes pods | string    | 10.1.0.0/16      | No       |
+| service_ip_range | IP address range of Kubernetes services | string | 10.2.0.0/16      | No       |
+| version_prefix | Kubernetes engine version prefix | string      | n/a               | No       |
+| machine_type   | Node instance category         | string        | n/a               | No       |
+| cluster_name   | GKE cluster name              | string        | online-boutique-demo | No     |
+
+### Module Outputs
+
+| Name                   | Description                      |
+|------------------------|--------------------------------|
+| region                 | GCloud Region                   |
+| kubernetes_cluster_name | GKE Cluster Name               |
+| kubernetes_cluster_host | GKE Cluster Host               |
+| cluster_ca_certificate | Base64 encoded cluster CA certificate |
+| client_certificate     | Base64 encoded client certificate |
+| client_key             | Base64 encoded client key      |
+
+### Node Pool Configuration
+
+The node pool is configured with the following settings:
+
+- 3 nodes per zone
+- Machine type specified by `machine_type` variable
+- Disk size: 30GB standard persistent disk
+- OAuth scopes for logging, monitoring, and storage read-only
+- Node labels include the project ID as environment
+- Metadata disables legacy endpoints for security
+
+## 4. Usage and Deployment
+
+Follow these steps to deploy the GKE cluster:
 
 1. Clone the repository:
-```bash
-git clone https://github.com/cvitaa11/gke-demo.git
-cd gke-demo/infra/example
-```
-
+   ```bash
+   git clone https://github.com/cvitaa11/gke-demo.git
+   cd gke-demo/infra/example
+   ```
 2. Create a `terraform.tfvars` file with your project settings:
-```bash
-project_id     = "your-project-id"
-region         = "your-desired-region"
-node_locations = ["your-desired-AZs"]
-```
-3. Initialize Terraform
-```bash
-terraform init
-```
+   ```bash
+   project_id     = "your-project-id"
+   region         = "your-desired-region"
+   node_locations = ["your-desired-AZs"]
+   ```
+3. Initialize Terraform:
+   ```bash
+   terraform init
+   ```
 4. Review the plan:
-```bash
-terraform plan
-```
+   ```bash
+   terraform plan
+   ```
+   _Consider adding a screenshot of this output here._
 5. Apply the configuration:
-```bash
-terraform apply
-```
-6. After deployment, configure kubectl:
-```bash
-gcloud container clusters get-credentials $(terraform output -raw kubernetes_cluster_name) --region $(terraform output -raw region)
-```
+   ```bash
+   terraform apply
+   ```
+6. Configure kubectl to access the cluster:
+   ```bash
+   gcloud container clusters get-credentials $(terraform output -raw kubernetes_cluster_name) --region $(terraform output -raw region)
+   ```
+   _Consider adding a screenshot of `kubectl get nodes` output here._
 
-## Terraform resources
+## 5. Cleanup and Notes
 
-| Name                                                                      | Version  |
-|---------------------------------------------------------------------------|----------|
-| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | ~> 1.5.7 |
-| <a name="requirement_google"></a> [google](#requirement\_google)          | 6.8.0    |
+To destroy the created resources, run:
 
-## Providers
-
-| Name                                                       | Version |
-|------------------------------------------------------------|---------|
-| <a name="provider_google"></a> [google](#provider\_google) | 6.8.0   |
-
-## Resources
-
-| Name                                                                                                                                                       | Type        |
-|------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------|
-| [google_compute_network.vpc](https://registry.terraform.io/providers/hashicorp/google/6.8.0/docs/resources/compute_network)                                | resource    |
-| [google_compute_subnetwork.subnet](https://registry.terraform.io/providers/hashicorp/google/6.8.0/docs/resources/compute_subnetwork)                       | resource    |
-| [google_container_cluster.primary](https://registry.terraform.io/providers/hashicorp/google/6.8.0/docs/resources/container_cluster)                        | resource    |
-| [google_container_node_pool.primary_nodes](https://registry.terraform.io/providers/hashicorp/google/6.8.0/docs/resources/container_node_pool)              | resource    |
-| [google_container_engine_versions.gke_version](https://registry.terraform.io/providers/hashicorp/google/6.8.0/docs/data-sources/container_engine_versions) | data source |
-
-## Inputs
-
-| Name                                                                                   | Description                        | Type     | Default         | Required |
-|----------------------------------------------------------------------------------------|------------------------------------|----------|-----------------|:--------:|
-| <a name="input_node_ip_range"></a> [node\_ip\_range](#input\_node\_ip\_range)          | IP address range of GKE nodes      | `string` | `"10.0.0.0/16"` |    no    |
-| <a name="input_node_locations"></a> [node\_locations](#input\_node\_locations)         | Availability zone of the GKE nodes | `any`    | n/a             |   yes    |
-| <a name="input_pod_ip_range"></a> [pod\_ip\_range](#input\_pod\_ip\_range)             | IP address range of k8s pods       | `string` | `"10.1.0.0/16"` |    no    |
-| <a name="input_project_id"></a> [project\_id](#input\_project\_id)                     | GCP project id                     | `any`    | n/a             |   yes    |
-| <a name="input_region"></a> [region](#input\_region)                                   | region                             | `string` | `"us-east1"`    |    no    |
-| <a name="input_service_ip_range"></a> [service\_ip\_range](#input\_service\_ip\_range) | IP address range of k8s services   | `string` | `"10.2.0.0/16"` |    no    |
-
-## Outputs
-
-| Name                                                                                                          | Description      |
-|---------------------------------------------------------------------------------------------------------------|------------------|
-| <a name="output_kubernetes_cluster_host"></a> [kubernetes\_cluster\_host](#output\_kubernetes\_cluster\_host) | GKE Cluster Host |
-| <a name="output_kubernetes_cluster_name"></a> [kubernetes\_cluster\_name](#output\_kubernetes\_cluster\_name) | GKE Cluster Name |
-| <a name="output_region"></a> [region](#output\_region)                                                        | GCloud Region    |
-
-## Cleanup
-To destroy the created resources run the following command:
 ```bash
 terraform destroy
 ```
 
-## Notes
-- The configuration uses minimal resources to stay within GCP's free tier
-- The cluster is deployed in a single zone for cost optimization
-- Remember to monitor your GCP usage and costs
+Notes:
+
+- The configuration uses minimal resources to stay within GCP's free tier.
+- The cluster is deployed in a single zone for cost optimization.
+- Monitor your GCP usage and costs carefully.
+
+## 6. Appendices
+
+You may add additional screenshots or diagrams here as needed.
