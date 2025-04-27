@@ -145,26 +145,6 @@ module "gke" {
 - `google_container_node_pool`: Creates the node pools for the cluster
 - `google_service_account`: Creates service accounts for GKE nodes
 
-### 3. Kubernetes Applications Module
-
-**Purpose**: Deploys applications to the GKE cluster using Kubernetes manifests.
-
-**Usage**:
-```hcl
-module "applications" {
-  source        = "./modules/applications"
-  project_id    = var.project_id
-  region        = var.region
-  cluster_name  = module.gke.cluster_name
-  depends_on    = [module.gke]
-}
-```
-
-**Principal Resources**:
-- `kubernetes_namespace`: Creates namespaces for applications
-- `kubernetes_deployment`: Deploys application workloads
-- `kubernetes_service`: Exposes applications internally or externally
-- `kubernetes_ingress`: Configures ingress rules for external access
 
 ## Variables & Outputs
 
@@ -173,17 +153,17 @@ module "applications" {
 | Variable Name | Type | Default | Description | Required By Module(s) |
 |---------------|------|---------|-------------|----------------------|
 | project_id | string | - | GCP Project ID | vpc, gke, applications |
-| region | string | "us-central1" | GCP Region for resources | vpc, gke, applications |
-| zone | string | "us-central1-a" | GCP Zone for zonal resources | gke |
+| region | string | "us-east1" | GCP Region for resources | vpc, gke, applications |
+| zone | string | "us-east1-b" | GCP Zone for zonal resources | gke |
 | network_name | string | "gke-network" | Name for the VPC network | vpc |
 | subnet_name | string | "gke-subnet" | Name for the subnet | vpc |
 | subnet_cidr | string | "10.0.0.0/24" | CIDR range for the subnet | vpc |
 | cluster_name | string | "gke-cluster" | Name for the GKE cluster | gke |
 | kubernetes_version | string | "1.24" | Kubernetes version for GKE | gke |
-| node_pool_machine_type | string | "e2-medium" | Machine type for GKE nodes | gke |
+| node_pool_machine_type | string | "e2-standard-2" | Machine type for GKE nodes | gke |
 | node_pool_min_count | number | 1 | Minimum number of nodes per zone | gke |
 | node_pool_max_count | number | 3 | Maximum number of nodes per zone | gke |
-| node_pool_disk_size_gb | number | 100 | Disk size for each node in GB | gke |
+| node_pool_disk_size_gb | number | 30 | Disk size for each node in GB | gke |
 | node_pool_service_account | string | "" | Service account for node pool (optional) | gke |
 
 ### Outputs
