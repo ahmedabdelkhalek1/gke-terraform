@@ -187,6 +187,11 @@ The cluster is configured with the following IP ranges:
 | Pods      | 10.1.0.0/16   |
 | Services  | 10.2.0.0/16   |
 
+Example output:
+![Pods CIDR](./images/PodsCIDR.png)
+![Services CIDR](./images/ServicesCIDR.png)
+![Pods CIDR](./images/nodes-CIDR.png)
+
 ### Network Setup
 
 The project creates a custom VPC network and subnet with secondary IP ranges for pods and services. This enables VPC-native routing for the GKE cluster.
