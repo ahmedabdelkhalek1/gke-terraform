@@ -154,9 +154,9 @@ jobs:
           
       - name: Install gke-gcloud-auth-plugin
         run: |
-          curl -LO https://storage.googleapis.com/kubernetes-release/gke-gcloud-auth-plugin/gke-gcloud-auth-plugin-linux-amd64.tar.gz
-          tar -xzf gke-gcloud-auth-plugin-linux-amd64.tar.gz
-          sudo mv gke-gcloud-auth-plugin /usr/local/bin/
+          curl -LO https://storage.googleapis.com/kubernetes-release/gke-gcloud-auth-plugin/gke-gcloud-auth-plugin-linux-amd64
+          chmod +x gke-gcloud-auth-plugin-linux-amd64
+          sudo mv gke-gcloud-auth-plugin-linux-amd64 /usr/local/bin/gke-gcloud-auth-plugin
           gke-gcloud-auth-plugin --version
           
       - name: Deploy Applications
