@@ -177,6 +177,20 @@ module "gke" {
 | cluster_ca_certificate | module.gke.cluster_ca_certificate | CA certificate for the GKE cluster |
 | kubeconfig_path | module.gke.kubeconfig_path | Path to the generated kubeconfig file |
 
+## 2. Architecture and Network Configuration
+
+The cluster is configured with the following IP ranges:
+
+| Component | IP Range      |
+|-----------|---------------|
+| Nodes     | 10.0.0.0/16   |
+| Pods      | 10.1.0.0/16   |
+| Services  | 10.2.0.0/16   |
+
+### Network Setup
+
+The project creates a custom VPC network and subnet with secondary IP ranges for pods and services. This enables VPC-native routing for the GKE cluster.
+
 ## Pipeline Usage
 
 The repository includes GitHub Actions workflows to automate infrastructure deployment and application management.
