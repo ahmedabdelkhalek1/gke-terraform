@@ -115,7 +115,7 @@ jobs:
       
         
   test-apps:
-    name: Preview Deployment
+    name: Preview App Before Deployment
     runs-on: ubuntu-latest
     needs: deploy-infrastructure
     steps:
@@ -147,7 +147,7 @@ jobs:
         run: |
           kubectl diff \
             --server-side \
-            -f https://raw.githubusercontent.com/GoogleCloudPlatform/microservices-demo/master/release/kubernetes-manifests.yaml
+            -f https://raw.githubusercontent.com/GoogleCloudPlatform/microservices-demo/master/release/kubernetes-manifests.yaml || echo "Differences found, but continuing workflow"
           
           
           
