@@ -5,7 +5,7 @@ resource "google_container_node_pool" "primary_nodes" {
 
   node_locations = var.node_locations
 
-  node_count = 2 #numbers of nodes per zone
+  node_count = 1 #numbers of nodes per zone
 
 
   version = data.google_container_engine_versions.gke_version.release_channel_latest_version["STABLE"]
@@ -23,7 +23,7 @@ resource "google_container_node_pool" "primary_nodes" {
     }
 
     # Reduce disk size from default 100GB to 50GB or smaller
-    disk_size_gb = 40
+    disk_size_gb = 30
     disk_type    = "pd-standard" # Changed from pd-ssd to pd-standard
     machine_type = var.machine_type
     tags         = ["gke-node", "${var.project_id}-gke"]
