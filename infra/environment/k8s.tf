@@ -5,16 +5,4 @@ provider "kubernetes" {
   client_key             = base64decode(module.gke_demo.client_key)
 }
 
-resource "null_resource" "deploy_microservices_demo" {
-  provisioner "local-exec" {
-    command = <<EOT
-      kubectl apply -f https://raw.githubusercontent.com/GoogleCloudPlatform/microservices-demo/master/release/kubernetes-manifests.yaml
-    EOT
-    environment = {
-      KUBECONFIG = "${path.module}/kubeconfig"
-    }
-  }
-  triggers = {
-    always_run = timestamp()
-  }
-}
+# Removed deployment from terraform to move to GitHub Actions pipeline

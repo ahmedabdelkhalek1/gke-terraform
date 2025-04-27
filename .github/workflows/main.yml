@@ -146,13 +146,14 @@ jobs:
       - name: Connect to GKE
         run: |
           echo "Setting up kubectl..."
-          echo "Fetching cluster endpoint and auth data."
-          echo "kubeconfig entry generated"
+          curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+          install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+          kubectl version --client
+          gcloud container clusters get-credentials online-boutique-demo-cluster --region us-east1 --project ${{ env.PROJECT_ID }}
           
       - name: Deploy Applications
         run: |
-          echo "Deploying applications..."
-          echo "Application deployment completed!"
+          kubectl apply -f https://raw.githubusercontent.com/GoogleCloudPlatform/microservices-demo/master/release/kubernetes-manifests.yaml
           
   notification:
     name: Failed pipeline notification
