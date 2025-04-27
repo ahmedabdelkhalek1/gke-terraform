@@ -177,7 +177,12 @@ jobs:
       - name: Deploy Applications
         run: |
           kubectl apply --validate=false -f https://raw.githubusercontent.com/GoogleCloudPlatform/microservices-demo/master/release/kubernetes-manifests.yaml
-            
+      
+      - name: Get Load Balancer External IP
+        run: |
+          kubectl get svc --field-selector spec.type=LoadBalancer -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}{.status.loadBalancer.ingress[0].ip}{"\n"}{end}'
+
+         
   notification:
     name: Failed pipeline notification
     runs-on: ubuntu-latest
