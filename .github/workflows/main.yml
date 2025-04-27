@@ -146,10 +146,17 @@ jobs:
       - name: Connect to GKE
         run: |
           echo "Setting up kubectl..."
-          gcloud components install kubectl
+          sudo apt-get update
+          sudo apt-get install -y kubectl
           kubectl version --client
           gcloud container clusters get-credentials online-boutique-demo-cluster --region us-east1 --project ${{ env.PROJECT_ID }}
           
+      - name: Install gke-gcloud-auth-plugin
+        run: |
+          curl -LO https://storage.googleapis.com/kubernetes-release/gke-gcloud-auth-plugin/latest/linux_amd64/gke-gcloud-auth-plugin
+          chmod +x gke-gcloud-auth-plugin
+          sudo mv gke-gcloud-auth-plugin /usr/local/bin/gke-gcloud-auth-plugin
+          gke-gcloud-auth-plugin --version
           
       - name: Deploy Applications
         run: |
