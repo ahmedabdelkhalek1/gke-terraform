@@ -135,33 +135,25 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        
+  
       - name: Google Auth
         uses: 'google-github-actions/auth@v2'
         with:
           project_id: ${{ env.PROJECT_ID }}
           workload_identity_provider: 'projects/447195453845/locations/global/workloadIdentityPools/github-actions-pool/providers/github-gke-terraform'
           service_account: 'gke-terraform-service-account@${{ env.PROJECT_ID }}.iam.gserviceaccount.com'
-          
-      - name: Connect to GKE
-        run: |
-          echo "Setting up kubectl..."
-          sudo apt-get update
-          sudo apt-get install -y kubectl
-          kubectl version --client
-          gcloud container clusters get-credentials online-boutique-demo-cluster --region us-east1 --project ${{ env.PROJECT_ID }}
-          
-      - name: Install gke-gcloud-auth-plugin
-        run: |
-          curl -LO https://storage.googleapis.com/kubernetes-release/gke-gcloud-auth-plugin/latest/linux_amd64/gke-gcloud-auth-plugin
-          chmod +x gke-gcloud-auth-plugin
-          sudo mv gke-gcloud-auth-plugin /usr/local/bin/gke-gcloud-auth-plugin
-          gke-gcloud-auth-plugin --version
-          
+  
+      - name: Set up GKE credentials
+        uses: google-github-actions/get-gke-credentials@v2
+        with:
+          project_id: ${{ env.PROJECT_ID }}
+          cluster_name: online-boutique-demo-cluster
+          location: us-east1
+  
       - name: Deploy Applications
         run: |
           kubectl apply --validate=false -f https://raw.githubusercontent.com/GoogleCloudPlatform/microservices-demo/master/release/kubernetes-manifests.yaml
-          
+            
   notification:
     name: Failed pipeline notification
     runs-on: ubuntu-latest
