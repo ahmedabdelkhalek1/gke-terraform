@@ -40,3 +40,11 @@ variable "machine_type" {
   description = "Node instance category"
   type        = string
 }
+
+
+variable "cluster_name" {
+  description = "GKE cluster name"
+  type        = string
+  default     = "Online-Boutique-Demo"
+
+}
