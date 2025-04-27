@@ -379,6 +379,7 @@ destroy:
 
 ## CI/CD Pipeline Flow Chart
 
+```mermaid
 graph TD
     A[Push to Repository] --> B[authenticate]
     B --> C[terraform-checks]
@@ -393,6 +394,7 @@ graph TD
     style D fill:#9cf,stroke:#333
     style H fill:#9cf,stroke:#333
     style J fill:#fcb,stroke:#333
+```
 
 ## Cleanup & Unlock Procedures
 
