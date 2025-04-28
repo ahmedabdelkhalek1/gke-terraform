@@ -138,7 +138,6 @@ module "gke" {
 | zone | string | "us-east1-b" | GCP Zone for zonal resources | gke |
 | network_name | string | "gke-network" | Name for the VPC network | vpc |
 | subnet_name | string | "gke-subnet" | Name for the subnet | vpc |
-| subnet_cidr | string | "10.0.0.0/24" | CIDR range for the subnet | vpc |
 | cluster_name | string | "gke-cluster" | Name for the GKE cluster | gke |
 | kubernetes_version | string | "1.24" | Kubernetes version for GKE | gke |
 | node_pool_machine_type | string | "e2-standard-2" | Machine type for GKE nodes | gke |
@@ -254,32 +253,9 @@ deploy-infrastructure:
       run: terraform apply -auto-approve -var="project_id=${{ secrets.PROJECT_ID }}"
 ```
 
-#### 4. test-apps
 
-**Purpose**: Runs tests against the application manifests.  
-**Trigger**: Runs after successful infrastructure deployment.  
-**Critical Steps**:
-- Gets GKE credentials to connect to the cluster
-- Validates Kubernetes manifests
-- Runs integration tests if applicable
 
-```yaml
-test-apps:
-  needs: deploy-infrastructure
-  runs-on: ubuntu-latest
-  steps:
-    - uses: actions/checkout@v3
-    - name: Get GKE credentials
-      uses: google-github-actions/get-gke-credentials@v1
-      with:
-        cluster_name: ${{ needs.deploy-infrastructure.outputs.cluster_name }}
-        location: ${{ vars.REGION }}
-    - name: Validate Kubernetes manifests
-      run: |
-        kubectl apply --dry-run=client -f kubernetes/
-```
-
-#### 5. preview-deployment
+#### 4. preview-deployment
 
 **Purpose**: Creates a preview of the application deployment.  
 **Trigger**: Runs after successful tests.  
@@ -291,7 +267,7 @@ test-apps:
 
 ```yaml
 preview-deployment:
-  needs: test-apps
+  needs: preview-deployment
   runs-on: ubuntu-latest
   steps:
     - uses: actions/checkout@v3
