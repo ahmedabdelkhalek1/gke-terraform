@@ -184,8 +184,16 @@ jobs:
       
       - name: Get Load Balancer External IP
         run: |
-          kubectl get svc --field-selector spec.type=LoadBalancer -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}{.status.loadBalancer.ingress[0].ip}{"\n"}{end}'
-
+          for i in {1..10}; do
+            IP=$(kubectl get svc --field-selector spec.type=LoadBalancer -o jsonpath='{.items[0].status.loadBalancer.ingress[0].ip}')
+            if [[ -n "$IP" ]]; then
+              echo "External IP: $IP"
+              exit 0
+            fi
+            echo "Attempt $i: no IP yet, sleeping..."
+            sleep 15
+          done
+          echo "Timed out waiting for LoadBalancer IP" && exit 1
          
   notification:
     name: Failed pipeline notification

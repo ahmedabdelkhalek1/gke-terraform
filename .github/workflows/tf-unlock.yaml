@@ -1,4 +1,5 @@
 name: 'Terraform UNLOCK'
+
 on:
   workflow_dispatch:
     inputs:
@@ -11,10 +12,13 @@ permissions:
   id-token: write
   contents: read
 
+# Sourcing common variables from repository secrets
 env:
-  TERRAFORM_VERSION: 1.5.7
-  PROJECT_ID: 'artful-fragment-458014-j4'
-  WORKING_DIR: 'infra/environment'
+  TERRAFORM_VERSION: ${{ secrets.TERRAFORM_VERSION }}
+  PROJECT_ID:       ${{ secrets.PROJECT_ID }}
+  WORKING_DIR:      ${{ secrets.WORKING_DIR }}
+  WIF_PROVIDER:     ${{ secrets.WIF_PROVIDER }}
+  SERVICE_ACCOUNT:  ${{ secrets.SERVICE_ACCOUNT }}
 
 jobs:
   unlock:
@@ -35,9 +39,9 @@ jobs:
       - name: Google Auth
         uses: 'google-github-actions/auth@v2'
         with:
-          project_id: ${{ env.PROJECT_ID }}
-          workload_identity_provider: 'projects/447195453845/locations/global/workloadIdentityPools/github-actions-pool/providers/github-gke-terraform'
-          service_account: 'gke-terraform-service-account@${{ env.PROJECT_ID }}.iam.gserviceaccount.com'
+          project_id:                ${{ env.PROJECT_ID }}
+          workload_identity_provider: ${{ env.WIF_PROVIDER }}
+          service_account:           ${{ env.SERVICE_ACCOUNT }}
           
       # Terraform Cleanup
       - name: Terraform Cleanup
