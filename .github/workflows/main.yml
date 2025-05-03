@@ -7,11 +7,15 @@ on:
       - '.gitignore'
   workflow_dispatch:
 
-# Define common environment variables
+# Define common environment variables (sourced from repository secrets)
 env:
-  TERRAFORM_VERSION: 1.5.7
-  PROJECT_ID: 'artful-fragment-458014-j4'
-  WORKING_DIR: 'infra/environment'
+  TERRAFORM_VERSION: ${{ secrets.TERRAFORM_VERSION }}
+  PROJECT_ID:       ${{ secrets.PROJECT_ID }}
+  WORKING_DIR:      ${{ secrets.WORKING_DIR }}
+  WIF_PROVIDER:     ${{ secrets.WIF_PROVIDER }}
+  SERVICE_ACCOUNT:  ${{ secrets.SERVICE_ACCOUNT }}
+  CLUSTER_NAME:     ${{ secrets.CLUSTER_NAME }}
+  CLUSTER_LOCATION: ${{ secrets.CLUSTER_LOCATION }}
 
 permissions:
     contents: read
@@ -34,9 +38,9 @@ jobs:
         id: auth
         uses: 'google-github-actions/auth@v2'
         with:
-          project_id: ${{ env.PROJECT_ID }}
-          workload_identity_provider: 'projects/447195453845/locations/global/workloadIdentityPools/github-actions-pool/providers/github-gke-terraform'
-          service_account: 'gke-terraform-service-account@${{ env.PROJECT_ID }}.iam.gserviceaccount.com'
+          project_id:                ${{ env.PROJECT_ID }}
+          workload_identity_provider: ${{ env.WIF_PROVIDER }}
+          service_account:            ${{ env.SERVICE_ACCOUNT }}
           
   terraform-checks:
     name: Terraform Init & Validation
@@ -57,9 +61,9 @@ jobs:
       - name: Google Auth
         uses: 'google-github-actions/auth@v2'
         with:
-          project_id: ${{ env.PROJECT_ID }}
-          workload_identity_provider: 'projects/447195453845/locations/global/workloadIdentityPools/github-actions-pool/providers/github-gke-terraform'
-          service_account: 'gke-terraform-service-account@${{ env.PROJECT_ID }}.iam.gserviceaccount.com'
+          project_id:                ${{ env.PROJECT_ID }}
+          workload_identity_provider: ${{ env.WIF_PROVIDER }}
+          service_account:            ${{ env.SERVICE_ACCOUNT }}
           
       - name: Terraform Cleanup
         run: rm -rf .terraform
@@ -97,9 +101,9 @@ jobs:
       - name: Google Auth
         uses: 'google-github-actions/auth@v2'
         with:
-          project_id: ${{ env.PROJECT_ID }}
-          workload_identity_provider: 'projects/447195453845/locations/global/workloadIdentityPools/github-actions-pool/providers/github-gke-terraform'
-          service_account: 'gke-terraform-service-account@${{ env.PROJECT_ID }}.iam.gserviceaccount.com'
+          project_id:                ${{ env.PROJECT_ID }}
+          workload_identity_provider: ${{ env.WIF_PROVIDER }}
+          service_account:            ${{ env.SERVICE_ACCOUNT }}
           
       - name: Initialize Terraform
         run: terraform init
@@ -125,16 +129,16 @@ jobs:
       - name: Google Auth
         uses: google-github-actions/auth@v2
         with:
-          project_id: ${{ env.PROJECT_ID }}
-          workload_identity_provider: 'projects/447195453845/locations/global/workloadIdentityPools/github-actions-pool/providers/github-gke-terraform'
-          service_account: 'gke-terraform-service-account@${{ env.PROJECT_ID }}.iam.gserviceaccount.com'
+          project_id:                ${{ env.PROJECT_ID }}
+          workload_identity_provider: ${{ env.WIF_PROVIDER }}
+          service_account:            ${{ env.SERVICE_ACCOUNT }}
 
       - name: Set up GKE credentials
         uses: google-github-actions/get-gke-credentials@v2
         with:
-          project_id: ${{ env.PROJECT_ID }}
-          cluster_name: online-boutique-demo-cluster
-          location: us-east1
+          project_id:   ${{ env.PROJECT_ID }}
+          cluster_name: ${{ env.CLUSTER_NAME }}
+          location:     ${{ env.CLUSTER_LOCATION }}
 
       - name: Dry-run apply (server-side)
         run: |
@@ -163,16 +167,16 @@ jobs:
       - name: Google Auth
         uses: 'google-github-actions/auth@v2'
         with:
-          project_id: ${{ env.PROJECT_ID }}
-          workload_identity_provider: 'projects/447195453845/locations/global/workloadIdentityPools/github-actions-pool/providers/github-gke-terraform'
-          service_account: 'gke-terraform-service-account@${{ env.PROJECT_ID }}.iam.gserviceaccount.com'
+          project_id:                ${{ env.PROJECT_ID }}
+          workload_identity_provider: ${{ env.WIF_PROVIDER }}
+          service_account:            ${{ env.SERVICE_ACCOUNT }}
   
       - name: Set up GKE credentials
         uses: google-github-actions/get-gke-credentials@v2
         with:
-          project_id: ${{ env.PROJECT_ID }}
-          cluster_name: online-boutique-demo-cluster
-          location: us-east1
+          project_id:   ${{ env.PROJECT_ID }}
+          cluster_name: ${{ env.CLUSTER_NAME }}
+          location:     ${{ env.CLUSTER_LOCATION }}
   
       - name: Deploy Applications
         run: |

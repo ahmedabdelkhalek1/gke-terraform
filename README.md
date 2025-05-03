@@ -20,27 +20,21 @@ This project automates the deployment of GKE clusters and related infrastructure
 
 To allow GitHub Actions to authenticate with GCP without using static credentials, follow these steps to set up Workload Identity Federation:
 
-```bash
-# 1. Set environment variables
-export PROJECT_ID="your-gcp-project-id"
-export POOL_NAME="github-actions-pool"
-export PROVIDER_NAME="github-provider"
-export SERVICE_ACCOUNT_NAME="github-gke-terraform"
-export REPO_NAME="ahmedabdelkhalek1/gke-terraform"
 
-# 2. Create a Workload Identity Pool
+
+# 1. Create a Workload Identity Pool
 gcloud iam workload-identity-pools create ${POOL_NAME} \
     --project=${PROJECT_ID} \
     --location="global" \
     --display-name="GitHub Actions Pool"
 
-# 3. Get the Workload Identity Pool ID
+# 2. Get the Workload Identity Pool ID
 export POOL_ID=$(gcloud iam workload-identity-pools describe ${POOL_NAME} \
     --project=${PROJECT_ID} \
     --location="global" \
     --format="value(name)")
 
-# 4. Create a Workload Identity Provider in the pool
+# 3. Create a Workload Identity Provider in the pool
 gcloud iam workload-identity-pools providers create-oidc ${PROVIDER_NAME} \
     --project=${PROJECT_ID} \
     --location="global" \
@@ -49,13 +43,13 @@ gcloud iam workload-identity-pools providers create-oidc ${PROVIDER_NAME} \
     --attribute-mapping="google.subject=assertion.sub,attribute.actor=assertion.actor,attribute.repository=assertion.repository" \
     --issuer-uri="https://token.actions.githubusercontent.com"
 
-# 5. Create a Service Account for GitHub Actions
+# 4. Create a Service Account for GitHub Actions
 gcloud iam service-accounts create ${SERVICE_ACCOUNT_NAME} \
     --project=${PROJECT_ID} \
     --description="Service Account for GitHub Actions to deploy GKE infrastructure" \
     --display-name="GitHub GKE Terraform SA"
 
-# 6. Grant necessary IAM roles to the Service Account
+# 5. Grant necessary IAM roles to the Service Account
 # For Terraform to manage GCP resources
 gcloud projects add-iam-policy-binding ${PROJECT_ID} \
     --member="serviceAccount:${SERVICE_ACCOUNT_NAME}@${PROJECT_ID}.iam.gserviceaccount.com" \
@@ -73,14 +67,14 @@ gcloud projects add-iam-policy-binding ${PROJECT_ID} \
     --member="serviceAccount:${SERVICE_ACCOUNT_NAME}@${PROJECT_ID}.iam.gserviceaccount.com" \
     --role="roles/storage.admin"
 
-# 7. Allow the GitHub Actions workflow to impersonate the Service Account
+# 6. Allow the GitHub Actions workflow to impersonate the Service Account
 gcloud iam service-accounts add-iam-policy-binding \
     ${SERVICE_ACCOUNT_NAME}@${PROJECT_ID}.iam.gserviceaccount.com \
     --project=${PROJECT_ID} \
     --role="roles/iam.workloadIdentityUser" \
     --member="principalSet://iam.googleapis.com/${POOL_ID}/attribute.repository/${REPO_NAME}"
 
-# 8. Get the Workload Identity Provider resource name
+# 7. Get the Workload Identity Provider resource name
 export WORKLOAD_IDENTITY_PROVIDER=$(gcloud iam workload-identity-pools providers describe ${PROVIDER_NAME} \
     --project=${PROJECT_ID} \
     --location="global" \
@@ -95,6 +89,13 @@ Add these values as GitHub repository secrets:
 - `WORKLOAD_IDENTITY_PROVIDER`: The provider ID from the output above
 - `SERVICE_ACCOUNT`: The service account email from the output above
 - `PROJECT_ID`: Your GCP project ID
+- `TERRAFORM_VERSION: 
+  `PROJECT_ID: 
+  `WORKING_DIR: 
+  `WIF_PROVIDER: 
+  `SERVICE_ACCOUNT: 
+  `CLUSTER_NAME: 
+  `CLUSTER_LOCATION: 
 
 ## Modules Overview
 
