@@ -75,6 +75,7 @@ gcloud iam service-accounts add-iam-policy-binding \
     --member="principalSet://iam.googleapis.com/${POOL_ID}/attribute.repository/${REPO_NAME}"
 
 # 7. Get the Workload Identity Provider resource name
+```
 export WORKLOAD_IDENTITY_PROVIDER=$(gcloud iam workload-identity-pools providers describe ${PROVIDER_NAME} \
     --project=${PROJECT_ID} \
     --location="global" \
@@ -86,16 +87,13 @@ echo "Service Account Email: ${SERVICE_ACCOUNT_NAME}@${PROJECT_ID}.iam.gservicea
 ```
 
 Add these values as GitHub repository secrets:
-- `WORKLOAD_IDENTITY_PROVIDER`: The provider ID from the output above
-- `SERVICE_ACCOUNT`: The service account email from the output above
-- `PROJECT_ID`: Your GCP project ID
-- `TERRAFORM_VERSION: 
-  `PROJECT_ID: 
-  `WORKING_DIR: 
-  `WIF_PROVIDER: 
-  `SERVICE_ACCOUNT: 
-  `CLUSTER_NAME: 
-  `CLUSTER_LOCATION: 
+- WIF_PROVIDER`: The provider ID from the output above
+-`SERVICE_ACCOUNT`: The service account email from the output above
+- PROJECT_ID`: Your GCP project ID
+- TERRAFORM_VERSION:  
+-  WORKING_DIR: 
+-  CLUSTER_NAME: 
+-  CLUSTER_LOCATION: 
 
 ## Modules Overview
 
